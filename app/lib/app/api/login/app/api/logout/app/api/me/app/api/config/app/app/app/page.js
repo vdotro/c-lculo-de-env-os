@@ -166,3 +166,167 @@ export default function Page() {
           <div>
             {config.products.map(p => (
               <div className="item-row" key={p.id}>
+                <div>{p.name}</div>
+                <div>
+                  {isAdmin
+                    ? <input className="pts-input" type="number" min="0" value={p.pts}
+                        onChange={e => updateProductPts(p.id, parseFloat(e.target.value) || 0)} />
+                    : <div style={{ textAlign: 'center' }}>{p.pts}</div>}
+                </div>
+                <div className="qty">
+                  <button onClick={() => setQty(p.id, -1)}>−</button>
+                  <span>{qtys[p.id] || 0}</span>
+                  <button onClick={() => setQty(p.id, 1)}>+</button>
+                </div>
+                {isAdmin ? <button className="del-btn" onClick={() => deleteProduct(p.id)}>×</button> : <span />}
+              </div>
+            ))}
+          </div>
+
+          {isAdmin && <AddProductRow onAdd={addProduct} />}
+
+          <div style={{ marginTop: 20 }}>
+            <h2 style={{ marginBottom: 6 }}>Distancia</h2>
+            <div className="km-row">
+              <input type="number" min="0" step="0.5" value={km} onChange={e => setKm(parseFloat(e.target.value) || 0)} />
+              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>km</span>
+            </div>
+          </div>
+
+          <div className="subida-row">
+            <label>
+              <input type="checkbox" checked={subidaCheck} onChange={e => setSubidaCheck(e.target.checked)} />
+              Incluye subida a domicilio (escalera / piso alto)
+              <span style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>
+                {(config.subidaMonto > 0 || config.subidaPct > 0) &&
+                  '(' + [config.subidaMonto > 0 ? '+$' + config.subidaMonto.toLocaleString('es-AR') : null,
+                         config.subidaPct > 0 ? '+' + config.subidaPct + '% del km' : null]
+                        .filter(Boolean).join(' y ') + ')'}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="card result-card">
+          <h2>Resultado</h2>
+          <span className="tier-badge" style={{ background: tierColor }}>{matched ? matched.name : 'Sin productos'}</span>
+          <div className="price">${total.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</div>
+          {matched && (
+            <div className="breakdown">
+              <div><span>Tarifa {matched.name}</span><span>${matched.kmRate.toLocaleString('es-AR')}/km</span></div>
+              <div><span>{km} km × ${matched.kmRate}/km</span><span>${kmCost.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></div>
+              {subidaFija > 0 && <div><span>Subida a domicilio (fijo)</span><span>${subidaFija.toLocaleString('es-AR')}</span></div>}
+              {subidaCheck && config.subidaPct > 0 && <div><span>Subida a domicilio ({config.subidaPct}% del km)</span><span>${subidaPctCost.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span></div>}
+            </div>
+          )}
+          <div className="points-total">{totalPts} punto{totalPts === 1 ? '' : 's'} de bulto</div>
+
+          {!isAdmin && <div className="locked-note">🔒 Pedile a un administrador que ingrese para configurar tipos de envío, subida y usuarios.</div>}
+
+          {isAdmin && (
+            <>
+              <details>
+                <summary>Costo extra por subida a domicilio</summary>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                  <span>$</span>
+                  <input type="number" min="0" style={{ width: 100 }} value={config.subidaMonto}
+                    onChange={e => updateSubida('subidaMonto', parseFloat(e.target.value) || 0)} />
+                  <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>monto fijo</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                  <input type="number" min="0" step="0.5" style={{ width: 100 }} value={config.subidaPct}
+                    onChange={e => updateSubida('subidaPct', parseFloat(e.target.value) || 0)} />
+                  <span>%</span>
+                  <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>extra sobre el costo por km</span>
+                </div>
+              </details>
+
+              <details>
+                <summary>Configurar tipos de envío</summary>
+                {sorted.map(t => (
+                  <div className="tier-row" key={t.id}>
+                    <input value={t.name} onChange={e => updateTier(t.id, 'name', e.target.value)} />
+                    <input type="number" placeholder="sin límite" value={t.maxPts ?? ''}
+                      onChange={e => updateTier(t.id, 'maxPts', e.target.value === '' ? null : parseFloat(e.target.value))} />
+                    <input type="number" value={t.kmRate} onChange={e => updateTier(t.id, 'kmRate', parseFloat(e.target.value) || 0)} />
+                    <button className="del-btn" onClick={() => deleteTier(t.id)}>×</button>
+                  </div>
+                ))}
+                <AddTierRow onAdd={addTier} />
+              </details>
+
+              <details>
+                <summary>Usuarios (legajo, PIN y rol)</summary>
+                {config.admins.map(a => (
+                  <div className="admin-list-row" key={a.legajo}>
+                    <input value={a.name} onChange={e => updateAdmin(a.legajo, 'name', e.target.value)} />
+                    <input value={a.legajo} onChange={e => updateAdmin(a.legajo, 'legajo', e.target.value)} />
+                    <input value={a.pin} onChange={e => updateAdmin(a.legajo, 'pin', e.target.value)} />
+                    <select value={a.role} onChange={e => updateAdmin(a.legajo, 'role', e.target.value)}>
+                      <option value="vendedor">Vendedor</option>
+                      <option value="admin">Administrador</option>
+                    </select>
+                    <button className="del-btn" onClick={() => deleteAdmin(a.legajo)}>×</button>
+                  </div>
+                ))}
+                <AddAdminRow onAdd={addAdmin} />
+              </details>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddProductRow({ onAdd }) {
+  const [name, setName] = useState('');
+  const [pts, setPts] = useState(1);
+  return (
+    <div className="add-row">
+      <input placeholder="Nombre del producto" value={name} onChange={e => setName(e.target.value)} />
+      <input type="number" min="1" style={{ width: 60 }} value={pts} onChange={e => setPts(parseFloat(e.target.value) || 1)} />
+      <button onClick={() => { if (!name.trim()) return; onAdd(name.trim(), pts); setName(''); setPts(1); }}>+ Agregar</button>
+    </div>
+  );
+}
+
+function AddTierRow({ onAdd }) {
+  const [name, setName] = useState('');
+  const [maxPts, setMaxPts] = useState('');
+  const [kmRate, setKmRate] = useState('');
+  return (
+    <div className="add-row">
+      <input placeholder="Nombre (ej: Tipo 4)" value={name} onChange={e => setName(e.target.value)} />
+      <input type="number" placeholder="Hasta pts" style={{ width: 80 }} value={maxPts} onChange={e => setMaxPts(e.target.value)} />
+      <input type="number" placeholder="$/km" style={{ width: 70 }} value={kmRate} onChange={e => setKmRate(e.target.value)} />
+      <button onClick={() => {
+        onAdd(name.trim() || 'Tipo nuevo', maxPts === '' ? null : parseFloat(maxPts), parseFloat(kmRate) || 0);
+        setName(''); setMaxPts(''); setKmRate('');
+      }}>+ Agregar tipo</button>
+    </div>
+  );
+}
+
+function AddAdminRow({ onAdd }) {
+  const [name, setName] = useState('');
+  const [legajoVal, setLegajoVal] = useState('');
+  const [pinVal, setPinVal] = useState('');
+  const [role, setRole] = useState('vendedor');
+  return (
+    <div className="add-row">
+      <input placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} />
+      <input placeholder="Legajo" style={{ width: 70 }} value={legajoVal} onChange={e => setLegajoVal(e.target.value)} />
+      <input placeholder="PIN" style={{ width: 60 }} value={pinVal} onChange={e => setPinVal(e.target.value)} />
+      <select value={role} onChange={e => setRole(e.target.value)}>
+        <option value="vendedor">Vendedor</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button onClick={() => {
+        if (!name.trim() || !legajoVal.trim() || !pinVal.trim()) return;
+        onAdd(name.trim(), legajoVal.trim(), pinVal.trim(), role);
+        setName(''); setLegajoVal(''); setPinVal(''); setRole('vendedor');
+      }}>+ Agregar</button>
+    </div>
+  );
+}
