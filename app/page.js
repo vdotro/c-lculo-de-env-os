@@ -188,7 +188,7 @@ export default function Page() {
           <div style={{ marginTop: 20 }}>
             <h2 style={{ marginBottom: 6 }}>Distancia</h2>
             <div className="km-row">
-              <input type="number" min="0" step="0.5" value={km} onChange={e => setKm(parseFloat(e.target.value) || 0)} onFocus={e => e.target.select()} />
+              <input type="number" min="0" step="0.5" value={km === 0 ? '' : km} onChange={e => setKm(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} placeholder="0" />
               <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>km</span>
             </div>
           </div>
