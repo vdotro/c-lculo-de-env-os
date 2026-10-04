@@ -285,7 +285,7 @@ function AddProductRow({ onAdd }) {
   return (
     <div className="add-row">
       <input placeholder="Nombre del producto" value={name} onChange={e => setName(e.target.value)} />
-      <input type="number" min="1" style={{ width: 60 }} value={pts} onChange={e => setPts(parseFloat(e.target.value) || 1)} />
+      <input type="number" min="1" style={{ width: 60 }} value={pts} onChange={e => setPts(parseFloat(e.target.value) || 1)} onFocus={e => e.target.select()} />
       <button onClick={() => { if (!name.trim()) return; onAdd(name.trim(), pts); setName(''); setPts(1); }}>+ Agregar</button>
     </div>
   );
