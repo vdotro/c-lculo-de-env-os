@@ -169,8 +169,8 @@ export default function Page() {
                 <div>{p.name}</div>
                 <div>
                   {isAdmin
-                    ? <input className="pts-input" type="number" min="0" value={p.pts}
-                        onChange={e => updateProductPts(p.id, parseFloat(e.target.value) || 0)} />
+                      ? <input className="pts-input" type="number" min="0" value={p.pts === 0 ? '' : p.pts} placeholder="0"
+        onChange={e => updateProductPts(p.id, e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
                     : <div style={{ textAlign: 'center' }}>{p.pts}</div>}
                 </div>
                 <div className="qty">
@@ -229,13 +229,13 @@ export default function Page() {
                 <summary>Costo extra por subida a domicilio</summary>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
                   <span>$</span>
-                  <input type="number" min="0" style={{ width: 100 }} value={config.subidaMonto}
-                    onChange={e => updateSubida('subidaMonto', parseFloat(e.target.value) || 0)} />
+                  <input type="number" min="0" style={{ width: 100 }} value={config.subidaMonto === 0 ? '' : config.subidaMonto} placeholder="0"
+  onChange={e => updateSubida('subidaMonto', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
                   <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>monto fijo</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-                  <input type="number" min="0" step="0.5" style={{ width: 100 }} value={config.subidaPct}
-                    onChange={e => updateSubida('subidaPct', parseFloat(e.target.value) || 0)} />
+                                    <input type="number" min="0" step="0.5" style={{ width: 100 }} value={config.subidaPct === 0 ? '' : config.subidaPct} placeholder="0"
+                    onChange={e => updateSubida('subidaPct', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
                   <span>%</span>
                   <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>extra sobre el costo por km</span>
                 </div>
@@ -248,7 +248,7 @@ export default function Page() {
                     <input value={t.name} onChange={e => updateTier(t.id, 'name', e.target.value)} />
                     <input type="number" placeholder="sin límite" value={t.maxPts ?? ''}
                       onChange={e => updateTier(t.id, 'maxPts', e.target.value === '' ? null : parseFloat(e.target.value))} />
-                    <input type="number" value={t.kmRate} onChange={e => updateTier(t.id, 'kmRate', parseFloat(e.target.value) || 0)} />
+                    <input type="number" value={t.kmRate === 0 ? '' : t.kmRate} placeholder="0" onChange={e => updateTier(t.id, 'kmRate', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
                     <button className="del-btn" onClick={() => deleteTier(t.id)}>×</button>
                   </div>
                 ))}
