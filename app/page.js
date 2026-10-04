@@ -281,15 +281,16 @@ export default function Page() {
 
 function AddProductRow({ onAdd }) {
   const [name, setName] = useState('');
-  const [pts, setPts] = useState(1);
+  const [pts, setPts] = useState('');
   return (
     <div className="add-row">
       <input placeholder="Nombre del producto" value={name} onChange={e => setName(e.target.value)} />
-      <input type="number" min="1" style={{ width: 60 }} value={pts} onChange={e => setPts(parseFloat(e.target.value) || 1)} onFocus={e => e.target.select()} />
-      <button onClick={() => { if (!name.trim()) return; onAdd(name.trim(), pts); setName(''); setPts(1); }}>+ Agregar</button>
+      <input type="number" min="1" style={{ width: 60 }} value={pts} placeholder="1" onChange={e => setPts(e.target.value)} />
+      <button onClick={() => { if (!name.trim()) return; onAdd(name.trim(), pts === '' ? 1 : parseFloat(pts) || 1); setName(''); setPts(''); }}>+ Agregar</button>
     </div>
   );
 }
+
 
 function AddTierRow({ onAdd }) {
   const [name, setName] = useState('');
